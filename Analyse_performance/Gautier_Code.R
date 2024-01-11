@@ -1,6 +1,4 @@
-##gautier Code
-
-setwd(dir = "Bureau/TFE/stat/1")
+setwd(dir = "Bureau/TFE/stat/1/")
 
 Gautier_Data<-read.csv2("Gautier_Data.csv")
 str(Gautier_Data)
@@ -31,11 +29,6 @@ library(ggpubr)
 library(sandwich)
 library(msm)
 
-#Useful script to source
-#les scripts de Gilles San Martin
-source("C://Users/grego/OneDrive/Assistanat/2018-2019/MesureBiodiversite/Analyses spatiales 2/mytoolbox.R")
-source("C://Users/grego/OneDrive/Assistanat/2018-2019/MesureBiodiversite/Analyses spatiales 2/model.select_0.4.R")
-
 ####Exploratory data######
 #Check the variability of our customized precision formulae
 library(hrbrthemes)
@@ -60,7 +53,6 @@ TervurenMethod <- TervurenMethod$absolute_precision
 ##Test_Stats
 t.test(GBXMethod,TervurenMethod)
 ### ==> Significant test so there is a precision value that is different with the TERVUREN method
-
 
 ggplot(data=Gautier_Data, aes(y = heightmean, x = method, fill = method)) +
   geom_boxplot(fill = c("orange","#DA5724")) + geom_jitter(color="black", alpha=0.9)
@@ -128,8 +120,3 @@ ggplot(data=Gautier_Data, aes(y = absolute_precision, x = real_number, fill = me
   geom_point(shape = 1) +
   geom_smooth(method = "lm",se = T, color = "black")+
   theme_bw()
-
-
-
-
-
