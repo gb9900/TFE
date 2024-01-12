@@ -5,145 +5,152 @@ import os
 import sys
 import csv
 
-#récuperation des arguments
+#retrieving arguments (parameters + image path)
 h_min = int(sys.argv[1])
 s_min = int(sys.argv[2])
 v_min = int(sys.argv[3])
 h_max = int(sys.argv[4])
 s_max = int(sys.argv[5])
 v_max = int(sys.argv[6])
-blurr = int(sys.argv[7])
-dilx = int(sys.argv[8])
-dily = int(sys.argv[9])
-sizem = int(sys.argv[10])
-sizema = int(sys.argv[11])
-filenameimg = sys.argv[12]
+blur = int(sys.argv[7])
+erode_x = int(sys.argv[8])
+erode_y = int(sys.argv[9])
+size_min = int(sys.argv[10])
+size_max = int(sys.argv[11])
+image_path = sys.argv[12]
 
-if(blurr%2!=1):
-    blurr = blurr+1
-    
-if(dilx%2==1):
-    dilx = dilx
+#kernel size must be odd for median blur and erode
+if(blur%2!=1):
+    blur = blur+1  
+if(erode_x%2==1):
+    erode_x = erode_x
 else:
-    dilx = dilx+1    
-if(dily%2==1):
-    dily = dily      
+    erode_x = erode_x+1    
+if(erode_y%2==1):
+    erode_y = erode_y      
 else:
-    dily = dily+1
+    erode_y = erode_y+1
+#kernel for erosion (horizontal and vertical cobined)
+kernel = np.ones((erode_y, erode_x), np.uint8)
 
-kernel = np.ones((dily, dilx), np.uint8)
-
-#chemin vers l'image de base
-image_path = filenameimg
-
-#nom de la classe pour annotation
+#class identifier
 class_id = 0
 
-#initailisation du compteur
+#counted insects counter
 count_nb = 0
+#total width and height (to calcumate mean)
 w_tot = 0
 h_tot = 0
 
+#read image + save dimensions
 img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
 height, width, channels = img.shape
 
-data_annot = "annot"
-if not os.path.exists(data_annot):
-        os.makedirs(data_annot)
-#creation d'un fichier txt pour annotation de chaque insecte dans le but de l'utiliser avec un modèle YOLO
+#folder for annotation
+data_annotation = "Annotation"
+if not os.path.exists(data_annotation):
+        os.makedirs(data_annotation)
+#set the output annotation file path
 image_filename_sp, _ = os.path.splitext(os.path.basename(image_path))
 image_filename_txt = image_filename_sp + ".txt"
-output_file_path = os.path.join(data_annot,image_filename_txt)
+output_file_path = os.path.join(data_annotation,image_filename_txt)
 
-#conversion en HSV
+#convert to HSV space
 hsv = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
+#HSV threshold [Hue, Saturation, Value]
+#Hue [0,179] all colors
+#Saturation [0,255] from least to most saturated (color)
+#Value [0,255] from darkest (black) to lightest (brightness)
+lower = np.array([h_min, s_min, v_min], np.uint8)
+upper = np.array([h_max, s_max, v_max], np.uint8)
 
-#seil de detection en HSV [Hue, Saturation, Value]
-#Hue [0,179] toutes les couleurs
-#Saturation [0,255] du moins au plus sature (couleur)
-#Value [0,255] du plus sombre (noir) au plus clair (luminosite)
-SEUIL_MIN = np.array([h_min, s_min, v_min], np.uint8)
-SEUIL_MAX = np.array([h_max, s_max, v_max], np.uint8)
+#application of the threshold
+mask = cv2.inRange(hsv, lower, upper)
 
-#application du seil pour détection des insectes
-seuil = cv2.inRange(hsv, SEUIL_MIN, SEUIL_MAX)
+#apply median blur
+med_blur = cv2.medianBlur(mask,blur)
+#apply erosion
+erode = cv2.dilate(med_blur,kernel)
+#add a contour to the edge to close all contours
+erode_with_border = cv2.copyMakeBorder(erode,1,1,1,1, cv2.BORDER_CONSTANT, value=255)
+#apply canny to detect edges
+edges = cv2.Canny(erode_with_border, 0, 150)
+#dilate edges a bit to avoid discontinuity
+edges_dilated = cv2.dilate(edges, np.ones((3, 3), np.uint8))
 
-#flou median pour homogeniser chaque insecte
-mb = cv2.medianBlur(seuil,blurr)
-ero = cv2.dilate(mb,kernel)
-erob = cv2.copyMakeBorder(ero,1,1,1,1, cv2.BORDER_CONSTANT, value=255)
-edges1 = cv2.Canny(erob, 0, 150)
-edges = cv2.dilate(edges1, np.ones((3, 3), np.uint8))
+#list every contours
+contours, _ = cv2.findContours(edges_dilated, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_NONE)
 
-#contours des insectes
-contours, _ = cv2.findContours(edges, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_NONE)
-
-#copie et recuperation des dimensions pour les statistiques
+#copy original image for visualization
 out = img.copy()
 
-#ouverture du fichier d'annotation
+#open annotation file
 with open(output_file_path, 'w') as output_file:
 
-#prise en compte de chaque contour avec une aire minimum
-    for co in contours:
-        area = cv2.contourArea(co)
-        if area > sizem and area < sizema:      
-            x,y,w,h = cv2.boundingRect(co)
-            #si le contour fait 3/4 de la largeur ou hauteur, c'est probablement une erreur
+    #each contour between sizeMin and sizeMax is taken into account 
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        if area > size_min and area < size_max:  
+            #bounding box coordinates         
+            x,y,w,h = cv2.boundingRect(contour)
+            #if the contour is too long, it is rejected
             if w>0.75*width or h>0.75*height:
                 continue
                 
-            #marge de chaque coté car median blur peut effacer des details
-            marge = 5
-            xi = max(0,x-marge)
-            xf = min(width,x+w+marge)
-            yi = max(0,y-marge)
-            yf = min(height,y+h+marge)
+            #apply a margin on each side
+            margin = 5
+            x_i_det = max(0,x-margin)
+            x_f_det = min(width,x+w+margin)
+            y_i_det = max(0,y-margin)
+            y_f_det = min(height,y+h+margin)
             
-            x_center = (xi + (xf-xi)/ 2) / width
-            y_center = (yi + (yf-yi)/ 2) / height
-            width_normalized = (xf-xi) / width
-            height_normalized = (yf-yi) / height
-            
+            #normalized coordinates
+            x_center = (x_i_det + (x_f_det-x_i_det)/ 2) / width
+            y_center = (y_i_det + (y_f_det-y_i_det)/ 2) / height
+            width_normalized = (x_f_det-x_i_det) / width
+            height_normalized = (y_f_det-y_i_det) / height
+           
+            #write in the anntation file
             output_file.write(f"{class_id} {x_center} {y_center} {width_normalized} {height_normalized}\n")
             
-                
-            #tracage d'un rectangle en bleu et incrémentation du compteur d'insectes
-            cv2.rectangle(out, (xi,yi), (xf,yf), (255, 0, 0), 8)
+            #visualization of bounding boxes in blue and increment counters
+            cv2.rectangle(out, (x_i_det,y_i_det), (x_f_det,y_f_det), (255, 0, 0), 8)
             count_nb += 1
             w_tot += w
             h_tot += h
     
-            #découpe de chaque instecte détecté en une image individuelle
-            insect = img[yi:yf, xi:xf] 
+            #cuts every insect in an individual image
+            insect = img[y_i_det:y_f_det, x_i_det:x_f_det] 
             #l'image de l'insecte individuel est sauvée dans un dossier avec un ID
-            path = 'insect'
-            if not os.path.exists(path):
-                os.makedirs(path)           
-            if not os.path.exists(os.path.join(path,image_filename_sp)):
-                #sous-dossier
-                os.mkdir(os.path.join(path,image_filename_sp))
+            data_indiv = 'Insect'
+            if not os.path.exists(data_indiv):
+                os.makedirs(data_indiv)           
+            if not os.path.exists(os.path.join(data_indiv,image_filename_sp)):
+                #sub-folder with the name of the box
+                os.mkdir(os.path.join(data_indiv,image_filename_sp))
             
-            
-            cv2.imwrite(os.path.join(os.path.join(path,image_filename_sp) , 'insect'+str(count_nb)+'.png'), insect)
+            #save every individual image (insect)
+            cv2.imwrite(os.path.join(os.path.join(data_indiv,image_filename_sp) , 'insect'+str(count_nb)+'.png'), insect)
 
-
-#resultat
-data_out = "out"
+#folder for visualization
+data_out = "Out"
 if not os.path.exists(data_out):
-        os.makedirs(data_out)       
+        os.makedirs(data_out)   
+#save the annoted image for visualization    
 cv2.imwrite(os.path.join(data_out,'out_'+os.path.basename(image_path)+'.png'), out)
-print('nombre : '+str(count_nb))
+
+print('Number of insects : '+str(count_nb))
 w_mean = w_tot/count_nb
 h_mean = h_tot/count_nb
-#ouvrir le fichier pour les stats
+
+#open file for statistical analysis
 fichier_existe = 'out.csv'
 with open(fichier_existe, mode='a', newline='') as fichier_csv:
     writer = csv.writer(fichier_csv,delimiter=',')
 
-    #écrire les en-têtes si le fichier vient d'être créé
+    #write headers if the file has just been created
     if not fichier_existe:
         writer.writerow(["H_min", "S_min", "V_min","H_max", "S_max", "V_max","Blur","Erode_x","Erode_y","Area_min","Area_max","Path","Count","Width_mean","Height_mean","Method"])
 
-    #écrire une nouvelle ligne avec les valeurs
-    writer.writerow([h_min,s_min,v_min,h_max,s_max,v_max,blurr,dilx,dily,sizem,sizema,image_path,count_nb,w_mean,h_mean,1])
+    #write a new line with the values
+    writer.writerow([h_min,s_min,v_min,h_max,s_max,v_max,blur,erode_x,erode_y,size_min,size_max,image_path,count_nb,w_mean,h_mean,1])
