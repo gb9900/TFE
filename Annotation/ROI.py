@@ -17,7 +17,7 @@ ROIs = cv2.selectROIs("Select samples",img,True,False)
 #counter to save image with different name
 count_id = 0
 
-#identification class
+#class identifier
 class_id = 0
 
 #folder for annotation
@@ -63,8 +63,7 @@ with open(output_file_path, 'w') as output_file:
         #write in the anntation file
         output_file.write(f"{class_id} {x_center} {y_center} {width_normalized} {height_normalized}\n")
 
-    
-        #save cropped image
+        #save cropped image in the folder for individuals images
         cv2.imwrite(os.path.join(os.path.join(data_indiv,image_filename) , 'ROI'+str(count_id)+'.png'), img_crop)
 
         count_id+=1

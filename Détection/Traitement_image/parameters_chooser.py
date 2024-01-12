@@ -103,10 +103,12 @@ def load_img(img_path):
         erode = cv2.dilate(med_blur, kernel)
         #add a contour to the edge to close all contours
         erode_with_border = cv2.copyMakeBorder(erode,1,1,1,1, cv2.BORDER_CONSTANT, value=255)
+        #apply canny to detect edges
         edges = cv2.Canny(erode_with_border, 0, 150)
+        #dilate edges a bit to avoid discontinuity
         edges_dilated = cv2.dilate(edges, np.ones((3, 3), np.uint8))
  
-        #contour detection
+        #list every contours
         contours, _ = cv2.findContours(edges_dilated, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_NONE)
         
         #copy original and eroded image for visualization
