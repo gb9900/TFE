@@ -26,7 +26,7 @@ img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
 height, width, channels = img.shape
 
 #folder for annotation
-data_annotation = "Annotation"
+data_annotation = "Annotation_txt"
 if not os.path.exists(data_annotation):
         os.makedirs(data_annotation)
 #set the output annotation file path
@@ -78,7 +78,7 @@ with open(output_file_path, 'w') as output_file:
             #cuts every insect in an individual image
             insect = img[y_i_det:y_f_det, x_i_det:x_f_det] 
             #folder for individuals images
-            data_indiv = 'Insect'
+            data_indiv = 'Insects'
             if not os.path.exists(data_indiv):
                 os.makedirs(data_indiv)           
             if not os.path.exists(os.path.join(data_indiv,image_filename_sp)):

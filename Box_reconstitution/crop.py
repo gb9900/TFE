@@ -2,10 +2,8 @@
 from PIL import Image
 import os
 import sys
-import cv2
-import numpy as np
 
-#folder path + crop to apply
+#folder path + crop to apply (retrieving arguments)
 folder_path = sys.argv[1]
 crop_x = int(sys.argv[2])
 crop_y = int(sys.argv[3])
@@ -38,9 +36,10 @@ width = (width_box-2)*delta_x+(1920-x_i)+x_f
 #creating a blank image
 box = Image.new('RGB', (width, height))
 
+#counter to know the position of the part
 count = 0
 
-#cuts all folder images to defined dimensions
+#cuts all images of the folder to defined dimensions
 for image_filename in sorted(os.listdir(folder_path),reverse=True):
     image_path = os.path.join(folder_path, image_filename)
     to_cut = Image.open(image_path)
@@ -70,5 +69,5 @@ for image_filename in sorted(os.listdir(folder_path),reverse=True):
     box.paste(cut,(local_x_i+x_part*delta_x,local_y_i+y_part*delta_y))
     count = count+1
 
-#save the result
+#save the result on the current directory
 box.save("crop.jpg")

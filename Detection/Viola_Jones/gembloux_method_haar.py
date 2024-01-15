@@ -31,7 +31,7 @@ else:
 width_box = 6
 
 #folder for annotation
-data_annotation = "Annotation"
+data_annotation = "Annotation_txt"
 if not os.path.exists(data_annotation):
         os.makedirs(data_annotation)
 if not os.path.exists(os.path.join(data_annotation,os.path.basename(os.path.abspath(folder_path)))):
@@ -137,7 +137,7 @@ for image_filename in sorted(os.listdir(folder_path),reverse=True):
                 #cuts every insect in an individual image
                 insect = img[y_i_det:y_f_det, x_i_det:x_f_det] 
                 #folder for individuals images
-                data_indiv = 'Insect'
+                data_indiv = 'Insects'
                 if not os.path.exists(data_indiv):
                     os.makedirs(data_indiv)
                 if not os.path.exists(os.path.join(data_indiv,os.path.basename(os.path.abspath(folder_path)))):
@@ -149,7 +149,7 @@ for image_filename in sorted(os.listdir(folder_path),reverse=True):
                 count_id += 1
 
     #folder for visualization
-    data_visu = 'part'
+    data_visu = 'Parts'
     if not os.path.exists(data_visu):
         os.makedirs(data_visu)
     if not os.path.exists(os.path.join(data_visu,os.path.basename(os.path.abspath(folder_path)))):
