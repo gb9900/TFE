@@ -1,38 +1,39 @@
-# Analysis of entomological boxes: insect detection and classification
-ROI.py (select ROIs of an image) :
-    1) Use python command with the image you want to extract ROIs as argument (ex. "python ROI.py GxABT_single.bmp")
-    2) Select a ROI on the image with your mouse
-    3) Press ENTER or SPACE to save ROI
-    4) Repeat 2) and 3) as long as you like
-    5) Press ESC to quit
-    6) Annotation txt file is saved on "Annotation_txt" folder and individuals images are saved on a sub-folder on "Individuals_images" folder
+# Analyse des boîtes entomologiques : détection et classification des insectes
 
-crop.py (reconstruct a box form its parts):
-    1) Use python command with : (ex. "python crop.py GxABT_box 500 240")
-        a) Path to the folder containing the images of the box to be reconstructed
-        b) Number of pixels to crop on horizontal sides
-        c) Number of pixels to crop on vertical sides
-    2) Reconstructed box will be saved on the current directory
+## ROI.py (sélection des ROI d'une image) :
+1. Utilisez la commande python avec l'image dont vous voulez extraire les ROI en argument (ex. "python ROI.py GxABT_single.bmp")
+2. Sélectionnez une ROI sur l'image avec votre souris
+3. Appuyez sur ENTER ou ESPACE pour enregistrer la ROI
+4. Répétez les étapes 2) et 3) autant que nécessaire
+5. Appuyez sur ÉCHAP pour quitter
+6. Le fichier txt d'annotation est enregistré dans le dossier "Annotation_txt" et les images individuelles sont enregistrées dans un sous-dossier du dossier "Individuals_images"
 
-parameters_chooser.py (contrast detection to get the number of insects of an entomological box) : 
-    1) Use python command to launch GUI : "python parameters_chooser.py"
-    2) Select an image to visualize with the button : "Choose image"
-    3) Adjust parameters with cursors
-    4) (optional) Save parameters on a csv file with the button : "Save parameters"
-    5) (optional) Load parameters from a csv file with the button : "Load parameters"
-    6) Start counting for a box on parts (GxABT method) with the button : "Start counting (box parts)"
-    6bis) Start counting for a single image (Africamuseum method) with the button : "Start counting (complete box)"
-    7) Annotation txt files are saved on "Annotation_txt" folder, individuals insects are saved on a sub-folder on "Insects" folder and annoted images with bounding boxes are saved on a sub-folder on "Parts" folder (GxABT) or "Out" folder (Africamuseum). Parameters, number, width mean and height mean are saved on "out.csv" file
+## crop.py (reconstruction d'une boîte à partir de ses parties) :
+1. Utilisez la commande python avec : (ex. "python crop.py GxABT_box 500 240")
+   a) Chemin vers le dossier contenant les images de la boîte à reconstruire
+   b) Nombre de pixels à rogner sur les côtés horizontaux
+   c) Nombre de pixels à rogner sur les côtés verticaux
+2. La boîte reconstruite sera enregistrée dans le répertoire actuel
 
-gembloux_method_haar.py and africamuseum_method_haar.py (cascade detection to get the number of insects of an entomological box) :
-    1) Use python command with : (ex. "python gembloux_method_haar.py 1.2 3 3 GxABT_box cascade.xml ")
-        a) Scale Factor
-        b) Minimum number of neighbors
-        c) Minimum size of detection
-        d) Path to the folder containing the images of the box (GxABT) or to the single image (Africamuseum)
-        e) Path to the cascade xml file
-    2)  Annotation txt files are saved on "Annotation_txt" folder, individuals insects are saved on a sub-folder on "Insects" folder and annoted images with bounding boxes are saved on a sub-folder on "Parts" folder (GxABT) or "Out" folder (Africamuseum). Parameters, number, width mean and height mean are saved on "out.csv" file
+## parameters_chooser.py (détection du contraste pour obtenir le nombre d'insectes d'une boîte entomologique) :
+1. Utilisez la commande python pour lancer l'interface graphique : "python parameters_chooser.py"
+2. Sélectionnez une image à visualiser avec le bouton : "Choisir une image"
+3. Ajustez les paramètres avec les curseurs
+4. (optionnel) Enregistrez les paramètres dans un fichier csv avec le bouton : "Enregistrer les paramètres"
+5. (optionnel) Chargez les paramètres à partir d'un fichier csv avec le bouton : "Charger les paramètres"
+6. Commencez le décompte pour une boîte sur des parties (méthode GxABT) avec le bouton : "Commencer le décompte (parties de la boîte)"
+6bis. Commencez le décompte pour une seule image (méthode Africamuseum) avec le bouton : "Commencer le décompte (boîte complète)"
+7. Les fichiers txt d'annotation sont enregistrés dans le dossier "Annotation_txt", les insectes individuels sont enregistrés dans un sous-dossier du dossier "Insects" et les images annotées avec des cadres englobants sont enregistrées dans un sous-dossier du dossier "Parts" (GxABT) ou "Out" (Africamuseum). Les paramètres, le nombre, la largeur moyenne et la hauteur moyenne sont enregistrés dans le fichier "out.csv"
 
-yolo_custom.ipynb (detection using YOLO to get the number of insects of an entomological box) : follow jupiter notebook instructions
-cnn.ipynb (classification with a CNN) : follow jupiter notebook instructions
-svm.ipynb (classification with a SVM) : follow jupiter notebook instructions
+## gembloux_method_haar.py et africamuseum_method_haar.py (détection de cascade pour obtenir le nombre d'insectes d'une boîte entomologique) :
+1. Utilisez la commande python avec : (ex. "python gembloux_method_haar.py 1.2 3 3 GxABT_box cascade.xml ")
+   a) Facteur d'échelle
+   b) Nombre minimum de voisins
+   c) Taille minimum de détection
+   d) Chemin vers le dossier contenant les images de la boîte (GxABT) ou vers l'image unique (Africamuseum)
+   e) Chemin vers le fichier xml en cascade
+2. Les fichiers txt d'annotation sont enregistrés dans le dossier "Annotation_txt", les insectes individuels sont enregistrés dans un sous-dossier du dossier "Insects" et les images annotées avec des cadres englobants sont enregistrées dans un sous-dossier du dossier "Parts" (GxABT) ou "Out" (Africamuseum). Les paramètres, le nombre, la largeur moyenne et la hauteur moyenne sont enregistrés dans le fichier "out.csv"
+
+## yolo_custom.ipynb (détection en utilisant YOLO pour obtenir le nombre d'insectes d'une boîte entomologique) : suivez les instructions du cahier Jupiter
+## cnn.ipynb (classification avec un CNN) : suivez les instructions du cahier Jupiter
+## svm.ipynb (classification avec un SVM) : suivez les instructions du cahier Jupiter
